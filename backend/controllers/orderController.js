@@ -53,8 +53,22 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+//ASSIGN DRIVERS
+const assignDriver = async (req, res) => {
+    const { id } = req.params;
+    const { driver_id } = req.body;
+
+    const result = await pool.query(
+        "UPDATE orders SET driver_id = $1, status = 'assigned' WHERE id = $2 RETURNING *",
+        [driver_id, id]
+    );
+
+    res.json(result.rows[0]);
+};
+
 module.exports = {
     createOrder,
     getOrders,
-    updateOrderStatus
+    updateOrderStatus,
+    assignDriver
 };

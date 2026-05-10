@@ -3,8 +3,9 @@ const router = express.Router();
 
 const {
     createOrder,
-    getOrders,
-    updateOrderStatus
+        getOrders,
+        updateOrderStatus,
+        assignDriver
 } = require("../controllers/orderController");
 
 // 👇 ADD THIS LINE
@@ -17,4 +18,6 @@ router.post("/", authMiddleware, createOrder);
 router.get("/", authMiddleware, getOrders);
 
 router.patch("/:id/status", updateOrderStatus);
+
+router.patch("/:id/assign", assignDriver);
 module.exports = router;
