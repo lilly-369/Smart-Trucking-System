@@ -3,7 +3,8 @@ const router = express.Router();
 
 const {
     createOrder,
-    getOrders
+    getOrders,
+    updateOrderStatus
 } = require("../controllers/orderController");
 
 // 👇 ADD THIS LINE
@@ -15,4 +16,5 @@ router.post("/", authMiddleware, createOrder);
 // 🔐 PROTECTED ROUTE (GET ORDERS)
 router.get("/", authMiddleware, getOrders);
 
+router.patch("/:id/status", updateOrderStatus);
 module.exports = router;

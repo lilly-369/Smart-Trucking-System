@@ -34,4 +34,27 @@ const getOrders = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, getOrders };
+//UPDATE ORDERS
+const updateOrderStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    try {
+        const result = await pool.query(
+            "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
+            [status, id]
+        );
+
+        res.json(result.rows[0]);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Error updating status" });
+    }
+};
+
+module.exports = {
+    createOrder,
+    getOrders,
+    updateOrderStatus
+};
