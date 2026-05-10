@@ -3,9 +3,10 @@ const router = express.Router();
 
 const {
     createOrder,
-        getOrders,
-        updateOrderStatus,
-        assignDriver
+    getOrders,
+    updateOrderStatus,
+    assignDriver,
+    getDriverOrders
 } = require("../controllers/orderController");
 
 // 👇 ADD THIS LINE
@@ -20,4 +21,6 @@ router.get("/", authMiddleware, getOrders);
 router.patch("/:id/status", updateOrderStatus);
 
 router.patch("/:id/assign", assignDriver);
+
+router.get("/driver/:driver_id", getDriverOrders);
 module.exports = router;

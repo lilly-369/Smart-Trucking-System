@@ -66,9 +66,46 @@ const assignDriver = async (req, res) => {
     res.json(result.rows[0]);
 };
 
+// GET DRIVER ORDERS
+const getDriverOrders = async (req, res) => {
+
+    // Get driver ID from URL
+    const { driver_id } = req.params;
+
+    try {
+
+        // Fetch orders assigned to specific driver
+        const result = await pool.query(
+            `
+            SELECT *
+            FROM orders
+
+            WHERE driver_id = $1
+
+            ORDER BY created_at DESC
+            `,
+            [driver_id]
+        );
+
+        // Return driver's assigned orders
+        res.json(result.rows);
+
+    } catch (err) {
+
+        // Show error in terminal
+        console.error(err);
+
+        // Return error response
+        res.status(500).json({
+            message: "Error fetching driver orders"
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getOrders,
     updateOrderStatus,
-    assignDriver
+    assignDriver,
+    getDriverOrders
 };
