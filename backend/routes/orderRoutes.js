@@ -9,18 +9,21 @@ const {
     getDriverOrders
 } = require("../controllers/orderController");
 
-// 👇 ADD THIS LINE
 const authMiddleware = require("../middleware/authMiddleware");
 
-// 🔐 PROTECTED ROUTE (CREATE ORDER)
+//PROTECTED ROUTE (CREATE ORDER)
 router.post("/", authMiddleware, createOrder);
 
-// 🔐 PROTECTED ROUTE (GET ORDERS)
+//PROTECTED ROUTE (GET ORDERS)
 router.get("/", authMiddleware, getOrders);
 
+//UPDATE ORDERS
 router.patch("/:id/status", updateOrderStatus);
 
+//ASSIGN DRIVER
 router.patch("/:id/assign", assignDriver);
 
-router.get("/driver/:driver_id", getDriverOrders);
+//GET DRIVER ORDERS
+router.get("/driver/:driver_id", authMiddleware, getDriverOrders);
+
 module.exports = router;
