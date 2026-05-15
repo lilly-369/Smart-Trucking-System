@@ -34,22 +34,64 @@ const getOrders = async (req, res) => {
     }
 };
 
-//UPDATE ORDERS
+// UPDATE ORDER STATUS (ONLY ASSIGNED DRIVER CAN UPDATE)
 const updateOrderStatus = async (req, res) => {
+
     const { id } = req.params;
     const { status } = req.body;
 
+    const driverId = req.user.id; // from JWT
+
     try {
-        const result = await pool.query(
+
+        // Get the order
+        const orderResult = await pool.query(
+            "SELECT * FROM orders WHERE id = $1",
+            [id]
+        );
+
+        const order = orderResult.rows[0];
+
+        // Check if order exists
+        if (!order) {
+            return res.status(404).json({
+                message: "Order not found"
+            });
+        }
+
+        // SECURITY CHECK: only assigned driver can update
+        if (order.driver_id !== driverId) {
+            return res.status(403).json({
+                message: "You are not assigned to this order"
+            });
+        }
+
+        // Allowed status flow
+        const allowedTransitions = {
+            assigned: ["in_transit"],
+            in_transit: ["delivered"],
+            delivered: []
+        };
+
+        if (!allowedTransitions[order.status].includes(status)) {
+            return res.status(400).json({
+                message: `Invalid status change from ${order.status} to ${status}`
+            });
+        }
+
+        // Update status
+        const updated = await pool.query(
             "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
             [status, id]
         );
 
-        res.json(result.rows[0]);
+        res.json(updated.rows[0]);
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: "Error updating status" });
+        res.status(500).json({
+            message: "Error updating status"
+        });
     }
 };
 
@@ -102,10 +144,121 @@ const getDriverOrders = async (req, res) => {
     }
 };
 
+// GET LOGGED-IN DRIVER'S ORDERS
+const getMyDriverOrders = async (req, res) => {
+
+    // Get driver ID from JWT token
+    const driver_id = req.user.id;
+
+    try {
+
+        // Fetch only orders assigned to this driver
+        const result = await pool.query(
+            `SELECT * FROM orders
+             WHERE driver_id = $1
+             ORDER BY created_at DESC`,
+            [driver_id]
+        );
+
+        res.json(result.rows);
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({
+            message: "Error fetching driver orders"
+        });
+    }
+};
+
+// DRIVER STARTS DELIVERY
+const startDelivery = async (req, res) => {
+
+    const { id } = req.params;
+    const driverId = req.user.id;
+
+    try {
+
+        // Get order
+        const order = await pool.query(
+            "SELECT * FROM orders WHERE id = $1",
+            [id]
+        );
+
+        // Check ownership
+        if (order.rows[0].driver_id !== driverId) {
+            return res.status(403).json({
+                message: "Not your assigned order"
+            });
+        }
+
+        // Update start time + status
+        const result = await pool.query(
+            `UPDATE orders
+             SET status = 'in_transit',
+                 started_at = NOW()
+             WHERE id = $1
+             RETURNING *`,
+            [id]
+        );
+
+        res.json(result.rows[0]);
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({
+            message: "Error starting delivery"
+        });
+    }
+};
+
+// DRIVER COMPLETES DELIVERY
+const completeDelivery = async (req, res) => {
+
+    const { id } = req.params;
+    const driverId = req.user.id;
+
+    try {
+
+        const order = await pool.query(
+            "SELECT * FROM orders WHERE id = $1",
+            [id]
+        );
+
+        if (order.rows[0].driver_id !== driverId) {
+            return res.status(403).json({
+                message: "Not your assigned order"
+            });
+        }
+
+        const result = await pool.query(
+            `UPDATE orders
+             SET status = 'delivered',
+                 delivered_at = NOW()
+             WHERE id = $1
+             RETURNING *`,
+            [id]
+        );
+
+        res.json(result.rows[0]);
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({
+            message: "Error completing delivery"
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getOrders,
     updateOrderStatus,
     assignDriver,
-    getDriverOrders
+    getDriverOrders,
+    getMyDriverOrders,
+    startDelivery,
+    completeDelivery
 };

@@ -6,7 +6,10 @@ const {
     getOrders,
     updateOrderStatus,
     assignDriver,
-    getDriverOrders
+    getDriverOrders,
+    getMyDriverOrders,
+    startDelivery,
+    completeDelivery
 } = require("../controllers/orderController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -27,5 +30,14 @@ router.patch("/:id/assign", authMiddleware, roleMiddleware("admin"), assignDrive
 
 //GET DRIVER ORDERS
 router.get("/driver/:driver_id", authMiddleware, roleMiddleware("driver"), getDriverOrders);
+
+// DRIVER VIEW: SEE ONLY THEIR OWN ORDERS
+router.get("/me", authMiddleware, roleMiddleware("driver"), getMyDriverOrders);
+
+//DRIVER STARTS DELIVERY
+router.patch("/:id/start", authMiddleware, roleMiddleware("driver"), startDelivery);
+
+//DRIVER COMPLETES DELIVERY
+router.patch("/:id/complete", authMiddleware, roleMiddleware('driver'), completeDelivery);
 
 module.exports = router;
