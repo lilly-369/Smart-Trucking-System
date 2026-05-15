@@ -342,6 +342,62 @@ const getCompletedDeliveries = async (req, res) => {
     }
 };
 
+// GET DRIVER DASHBOARD STATS
+const getDriverStats = async (req, res) => {
+
+    const driverId = req.user.id;
+
+    try {
+
+        // Count completed deliveries
+        const completed = await pool.query(
+            `SELECT COUNT(*) 
+             FROM orders
+             WHERE driver_id=$1
+             AND status='delivered'`,
+            [driverId]
+        );
+
+        // Count active deliveries
+        const active = await pool.query(
+            `SELECT COUNT(*)
+             FROM orders
+             WHERE driver_id=$1
+             AND status='in_transit'`,
+            [driverId]
+        );
+
+        // Sum today's earnings
+        const earnings = await pool.query(
+            `SELECT COALESCE(SUM(price),0)
+             FROM orders
+             WHERE driver_id=$1
+             AND status='delivered'
+             AND DATE(delivered_at)=CURRENT_DATE`,
+            [driverId]
+        );
+
+        res.json({
+            completed_deliveries:
+            completed.rows[0].count,
+
+            active_deliveries:
+            active.rows[0].count,
+
+            earnings_today:
+            earnings.rows[0].coalesce
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            message: "Error fetching stats"
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getOrders,
@@ -353,5 +409,6 @@ module.exports = {
     completeDelivery,
     getActiveDelivery,
     getTodayDeliveries,
-    getCompletedDeliveries
+    getCompletedDeliveries,
+    getDriverStats
 };

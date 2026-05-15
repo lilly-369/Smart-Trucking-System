@@ -12,7 +12,8 @@ const {
     completeDelivery,
     getActiveDelivery,
     getTodayDeliveries,
-    getCompletedDeliveries
+    getCompletedDeliveries,
+    getDriverStats
 } = require("../controllers/orderController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -51,4 +52,7 @@ router.get("/my/today", authMiddleware, roleMiddleware("driver"), getTodayDelive
 
 //GET DRIVER COMPLETED DELIVERIES
 router.get("/my/completed", authMiddleware, roleMiddleware("driver"), getCompletedDeliveries);
+
+//GET DRIVER DASHBOARD STATS
+router.get("/my/stats", authMiddleware, roleMiddleware("driver"), getDriverStats);
 module.exports = router;
