@@ -288,6 +288,60 @@ const getActiveDelivery = async (req, res) => {
     }
 };
 
+// GET ALL DELIVERIES FOR TODAY
+const getTodayDeliveries = async (req, res) => {
+
+    const driverId = req.user.id;
+
+    try {
+
+        const result = await pool.query(
+            `SELECT *
+             FROM orders
+             WHERE driver_id = $1
+             AND DATE(created_at) = CURRENT_DATE
+             ORDER BY created_at DESC`,
+            [driverId]
+        );
+
+        res.json(result.rows);
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({
+            message: "Error fetching today's deliveries"
+        });
+    }
+};
+
+// GET COMPLETED DELIVERIES
+const getCompletedDeliveries = async (req, res) => {
+
+    const driverId = req.user.id;
+
+    try {
+
+        const result = await pool.query(
+            `SELECT *
+             FROM orders
+             WHERE driver_id = $1
+             AND status = 'delivered'
+             ORDER BY delivered_at DESC`,
+            [driverId]
+        );
+
+        res.json(result.rows);
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({
+            message: "Error fetching completed deliveries"
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getOrders,
@@ -297,5 +351,7 @@ module.exports = {
     getMyDriverOrders,
     startDelivery,
     completeDelivery,
-    getActiveDelivery
+    getActiveDelivery,
+    getTodayDeliveries,
+    getCompletedDeliveries
 };
