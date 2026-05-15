@@ -1,11 +1,22 @@
+// ROLE AUTHORIZATION MIDDLEWARE
 const roleMiddleware = (...allowedRoles) => {
 
     return (req, res, next) => {
 
-        // Get user role from JWT (already decoded in authMiddleware)
+        console.log("REQ USER:", req.user);
+        console.log("ALLOWED ROLES:", allowedRoles);
+
+        if (!req.user) {
+
+            return res.status(401).json({
+                message: "User not authenticated"
+            });
+        }
+
         const userRole = req.user.role;
 
-        // Check if user's role is allowed
+        console.log("USER ROLE:", userRole);
+
         if (!allowedRoles.includes(userRole)) {
 
             return res.status(403).json({
@@ -13,7 +24,6 @@ const roleMiddleware = (...allowedRoles) => {
             });
         }
 
-        // If allowed, continue
         next();
     };
 };
