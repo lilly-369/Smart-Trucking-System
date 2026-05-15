@@ -9,7 +9,8 @@ const {
     getDriverOrders,
     getMyDriverOrders,
     startDelivery,
-    completeDelivery
+    completeDelivery,
+    getActiveDelivery
 } = require("../controllers/orderController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -39,5 +40,8 @@ router.patch("/:id/start", authMiddleware, roleMiddleware("driver"), startDelive
 
 //DRIVER COMPLETES DELIVERY
 router.patch("/:id/complete", authMiddleware, roleMiddleware('driver'), completeDelivery);
+
+//GET DRIVER ACTIVE DELIVERY (ONLY ONE JOB IN PROGRESS)
+router.get("/my/active", authMiddleware, roleMiddleware("driver"), getActiveDelivery);
 
 module.exports = router;

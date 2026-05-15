@@ -252,6 +252,42 @@ const completeDelivery = async (req, res) => {
     }
 };
 
+// GET ACTIVE DELIVERY FOR LOGGED-IN DRIVER
+const getActiveDelivery = async (req, res) => {
+
+    const driverId = req.user.id;
+
+    try {
+
+        // Find ONLY the active job (in_transit)
+        const result = await pool.query(
+            `SELECT *
+             FROM orders
+             WHERE driver_id = $1
+             AND status = 'in_transit'
+             LIMIT 1`,
+            [driverId]
+        );
+
+        // If no active job
+        if (result.rows.length === 0) {
+            return res.json({
+                message: "No active delivery"
+            });
+        }
+
+        // Return active job
+        res.json(result.rows[0]);
+
+    } catch (err) {
+
+        console.error(err);
+        res.status(500).json({
+            message: "Error fetching active delivery"
+        });
+    }
+};
+
 module.exports = {
     createOrder,
     getOrders,
@@ -260,5 +296,6 @@ module.exports = {
     getDriverOrders,
     getMyDriverOrders,
     startDelivery,
-    completeDelivery
+    completeDelivery,
+    getActiveDelivery
 };
