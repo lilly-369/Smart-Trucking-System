@@ -14,7 +14,9 @@ const {
     getTodayDeliveries,
     getCompletedDeliveries,
     getDriverStats,
-    getAdminStats
+    getAdminStats,
+    updateLocation,
+    getLocation
 } = require("../controllers/orderController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -59,5 +61,11 @@ router.get("/my/stats", authMiddleware, roleMiddleware("driver"), getDriverStats
 
 //GET ADMIN STATS
 router.get("admin/stats", authMiddleware, roleMiddleware("admin"), getAdminStats);
+
+//DRIVER UPDATES LOCATION
+router.patch("/:id/location", authMiddleware, roleMiddleware("driver"), updateLocation);
+
+//VIEW LOCATION (ADMIN,USER)
+router.get("/:id/location", authMiddleware, roleMiddleware("admin", "user"), getLocation);
 
 module.exports = router;
