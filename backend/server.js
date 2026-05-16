@@ -4,31 +4,45 @@ require("dotenv").config();
 
 const pool = require("./config/db");
 
+// ROUTES
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
-const orderRoutes = require("./routes/orderRoutes");
+
+//MIDDLEWARE
+// Enable JSON body parsing
 app.use(express.json());
 
-app.use("/api/orders", orderRoutes);
+// Enable CORS
 app.use(cors());
 
-
-// test DB connection
-pool.connect()
-    .then(() => console.log("PostgreSQL Connected"))
-    .catch(err => console.error("DB Error:", err));
-
-// routes
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-
-// test route
+//TEST ROUTE
 app.get("/", (req, res) => {
     res.send("Smart Trucking Backend Running");
 });
 
+//DATABASE CONNECTION TEST
+pool.connect()
+    .then(() => console.log("PostgreSQL Connected"))
+    .catch(err => console.error("DB Error:", err));
+
+//AUTH ROUTES
+app.use("/api/auth", authRoutes);
+
+//USER ROUTES
+app.use("/api/users", userRoutes);
+
+//ORDER ROUTES
+app.use("/api/orders", orderRoutes);
+
+//ADMIN ROUTES
+app.use("/api/admin", adminRoutes);
+
+
+//START SERVER
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
